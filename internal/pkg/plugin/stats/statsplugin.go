@@ -1,0 +1,104 @@
+package statsplugin
+
+import (
+	"bytes"
+	"fmt"
+	"runtime"
+	"strconv"
+	"text/tabwriter"
+	"time"
+
+	"github.com/lampjaw/mutterblack/internal/pkg/plugin"
+	"github.com/lampjaw/mutterblack/pkg/command"
+	"github.com/lampjaw/mutterblack/pkg/discord"
+	"github.com/bwmarrin/discordgo"
+	"github.com/dustin/go-humanize"
+)
+
+type statsPlugin struct {
+	plugin.Plugin
+}
+
+func New() plugin.IPlugin {
+	return &statsPlugin{}
+}
+
+func (p *statsPlugin) Commands() []command.CommandDefinition {
+	return []command.CommandDefinition{
+		command.CommandDefinition{
+			CommandGroup: p.Name(),
+			CommandID:    "stats",
+			Triggers: []string{
+				"stats",
+			},
+			Description: "Get bot stats",
+			Callback:    p.runStatsCommand,
+		},
+	}
+}
+
+func (p *statsPlugin) Name() string {
+	return "Stats"
+}
+
+var statsStartTime = time.Now()
+
+func getDurationString(duration time.Duration) string {
+	return fmt.Sprintf(
+		"%0.2d:%02d:%02d",
+		int(duration.Hours()),
+		int(duration.Minutes())%60,
+		int(duration.Seconds())%60,
+	)
+}
+
+func (p *statsPlugin) runStatsCommand(client *discord.Discord, message discord.Message, args map[string]string, trigger string) {
+	stats := runtime.MemStats{}
+	runtime.ReadMemStats(&stats)
+
+	w := &tabwriter.Writer{}
+	buf := &bytes.Buffer{}
+
+	w.Init(buf, 0, 4, 0, ' ', 0)
+	fmt.Fprintf(w, "```\n")
+	fmt.Fprintf(w, "Discordgo: \t%s\n", discordgo.VERSION)
+	fmt.Fprintf(w, "Go: \t%s\n", runtime.Version())
+	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(statsStartTime)))
+	fmt.Fprintf(w, "Memory used: \t%s / %s (%s garbage collected)\n", humanize.Bytes(stats.Alloc), humanize.Bytes(stats.Sys), humanize.Bytes(stats.TotalAlloc))
+	fmt.Fprintf(w, "Concurrent tasks: \t%d\n", runtime.NumGoroutine())
+
+	fmt.Fprintf(w, "Connected servers: \t%d\n", client.ChannelCount())
+	if len(client.Sessions) > 1 {
+		shards := 0
+		for _, s := range client.Sessions {
+			if s.DataReady {
+				shards++
+			}
+		}
+		if shards == len(client.Sessions) {
+			fmt.Fprintf(w, "Shards: \t%d\n", shards)
+		} else {
+			fmt.Fprintf(w, "Shards: \t%d (%d connected)\n", len(client.Sessions), shards)
+		}
+		guild, err := client.Channel(message.Channel())
+		if err == nil {
+			id, err := strconv.Atoi(guild.ID)
+			if err == nil {
+				fmt.Fprintf(w, "Current shard: \t%d\n", ((id>>22)%len(client.Sessions) + 1))
+			}
+		}
+	}
+
+	fmt.Fprintf(w, "\n```")
+
+	w.Flush()
+	out := buf.String()
+
+	end := ""
+
+	if end != "" {
+		out += "\n" + end
+	}
+
+	client.SendMessage(message.Channel(), out)
+}
