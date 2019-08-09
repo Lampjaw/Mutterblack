@@ -94,9 +94,9 @@ func (p *statsPlugin) runStatsCommand(bot *discordgobot.Gobot, client *discordgo
 			return guilds[i].MemberCount > guilds[j].MemberCount
 		})
 
-		fmt.Fprintf(w, "Connected Guilds:")
+		fmt.Fprintf(w, "\nConnected Guilds:\n")
 
-		for _, guild := range client.Guilds() {
+		for _, guild := range guilds {
 			fmt.Fprintf(w, "%s: \t%d\n", guild.Name, guild.MemberCount)
 		}
 	}
