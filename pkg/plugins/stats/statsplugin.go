@@ -64,6 +64,7 @@ func (p *statsPlugin) runStatsCommand(bot *discordgobot.Gobot, client *discordgo
 	fmt.Fprintf(w, "Concurrent tasks: \t%d\n", runtime.NumGoroutine())
 
 	fmt.Fprintf(w, "Connected servers: \t%d\n", client.ChannelCount())
+	fmt.Fprintf(w, "Connected users: \t%d\n", client.UserCount())
 	if len(client.Sessions) > 1 {
 		shards := 0
 		for _, s := range client.Sessions {
