@@ -1,4 +1,4 @@
-module github.com/lampjaw/mutterblack/internal/pkg/plugin/planetsidetwo
+module github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo
 
 go 1.12
 

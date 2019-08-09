@@ -10,6 +10,7 @@ import (
 	planetsidetwoplugin "github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo"
 	statsplugin "github.com/lampjaw/mutterblack/pkg/plugins/stats"
 	translatorplugin "github.com/lampjaw/mutterblack/pkg/plugins/translator"
+	weatherplugin "github.com/lampjaw/mutterblack/pkg/plugins/weather"
 )
 
 // VERSION of Mutterblack
@@ -43,6 +44,9 @@ func main() {
 	bot.RegisterPlugin(statsplugin.New())
 	bot.RegisterPlugin(planetsidetwoplugin.New())
 	bot.RegisterPlugin(translatorplugin.New())
+
+	// TODO: Retire weather plugin
+	bot.RegisterPlugin(weatherplugin.New())
 
 	bot.Open()
 

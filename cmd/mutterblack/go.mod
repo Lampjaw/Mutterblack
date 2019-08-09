@@ -8,6 +8,7 @@ require (
 	github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo v0.0.0
 	github.com/lampjaw/mutterblack/pkg/plugins/stats v0.0.0
 	github.com/lampjaw/mutterblack/pkg/plugins/translator v0.0.0
+	github.com/lampjaw/mutterblack/pkg/plugins/weather v0.0.0
 )
 
 replace (
@@ -15,4 +16,5 @@ replace (
 	github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo => ../../pkg/plugins/planetsidetwo
 	github.com/lampjaw/mutterblack/pkg/plugins/stats => ../../pkg/plugins/stats
 	github.com/lampjaw/mutterblack/pkg/plugins/translator => ../../pkg/plugins/translator
+	github.com/lampjaw/mutterblack/pkg/plugins/weather => ../../pkg/plugins/weather
 )

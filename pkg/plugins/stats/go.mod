@@ -1,4 +1,4 @@
-module github.com/lampjaw/mutterblack/internal/pkg/plugin/stats
+module github.com/lampjaw/mutterblack/pkg/plugins/stats
 
 go 1.12
 

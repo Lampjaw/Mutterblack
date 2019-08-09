@@ -1,4 +1,4 @@
-module github.com/lampjaw/mutterblack/internal/pkg/plugin/invite
+module github.com/lampjaw/mutterblack/pkg/plugins/invite
 
 go 1.12
 

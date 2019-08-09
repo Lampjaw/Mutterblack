@@ -1,4 +1,4 @@
-module github.com/lampjaw/mutterblack/pkg/plugins/translator
+module github.com/lampjaw/mutterblack/pkg/plugins/weather
 
 go 1.12
 
