@@ -5,23 +5,20 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/lampjaw/mutterblack/internal/pkg/plugin"
-	"github.com/lampjaw/mutterblack/pkg/command"
-	"github.com/lampjaw/mutterblack/pkg/discord"
+	"github.com/lampjaw/discordgobot"
 )
 
 type translatorPlugin struct {
-	plugin.Plugin
+	discordgobot.Plugin
 }
 
-func New() plugin.IPlugin {
+func New() discordgobot.IPlugin {
 	return &translatorPlugin{}
 }
 
-func (p *translatorPlugin) Commands() []command.CommandDefinition {
-	return []command.CommandDefinition{
-		command.CommandDefinition{
-			CommandGroup: p.Name(),
+func (p *translatorPlugin) Commands() []discordgobot.CommandDefinition {
+	return []discordgobot.CommandDefinition{
+		discordgobot.CommandDefinition{
 			CommandID:    "twanswate",
 			Triggers: []string{
 				"twanswate",
@@ -36,7 +33,7 @@ func (p *translatorPlugin) Name() string {
 	return "translator"
 }
 
-func (p *translatorPlugin) runTwanswateCommand(client *discord.Discord, message discord.Message, args map[string]string, trigger string) {
+func (p *translatorPlugin) runTwanswateCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
 	previousMessages, err := client.GetMessages(message.Channel(), 1, message.MessageID())
 
 	if err != nil {

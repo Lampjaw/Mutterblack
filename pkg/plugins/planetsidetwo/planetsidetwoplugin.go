@@ -1,20 +1,18 @@
 package planetsidetwoplugin
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"time"
-	"os"
-	"context"
-	"net/http"
 	"io/ioutil"
 	"log"
+	"net/http"
+	"os"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/lampjaw/discordgobot"
 	"golang.org/x/oauth2/clientcredentials"
-	"github.com/lampjaw/mutterblack/internal/pkg/plugin"
-	"github.com/lampjaw/mutterblack/pkg/command"
-	"github.com/lampjaw/mutterblack/pkg/discord"
 )
 
 const CENSUS_IMAGEBASE_URI = "http://census.daybreakgames.com/files/ps2/images/static/"
@@ -24,25 +22,24 @@ var voidwellClientConfig clientcredentials.Config
 var voidwellClient *http.Client
 
 type planetsidetwoPlugin struct {
-	plugin.Plugin
+	discordgobot.Plugin
 }
 
-func New() plugin.IPlugin {
+func New() discordgobot.IPlugin {
 	return &planetsidetwoPlugin{}
 }
 
-func (p *planetsidetwoPlugin) Commands() []command.CommandDefinition {
-	return []command.CommandDefinition{
-		command.CommandDefinition{
-			CommandGroup: p.Name(),
-			CommandID:    "ps2-character",
+func (p *planetsidetwoPlugin) Commands() []discordgobot.CommandDefinition {
+	return []discordgobot.CommandDefinition{
+		discordgobot.CommandDefinition{
+			CommandID: "ps2-character",
 			Triggers: []string{
 				"ps2c",
 				"ps2c-ps4us",
 				"ps2c-ps4eu",
 			},
-			Arguments: []command.CommandDefinitionArgument{
-				command.CommandDefinitionArgument{
+			Arguments: []discordgobot.CommandDefinitionArgument{
+				discordgobot.CommandDefinitionArgument{
 					Pattern: "[a-zA-Z0-9]*",
 					Alias:   "characterName",
 				},
@@ -50,20 +47,19 @@ func (p *planetsidetwoPlugin) Commands() []command.CommandDefinition {
 			Description: "Get stats for a player.",
 			Callback:    p.runCharacterStatsCommand,
 		},
-		command.CommandDefinition{
-			CommandGroup: p.Name(),
-			CommandID:    "ps2-character-weapons",
+		discordgobot.CommandDefinition{
+			CommandID: "ps2-character-weapons",
 			Triggers: []string{
 				"ps2c",
 				"ps2c-ps4us",
 				"ps2c-ps4eu",
 			},
-			Arguments: []command.CommandDefinitionArgument{
-				command.CommandDefinitionArgument{
+			Arguments: []discordgobot.CommandDefinitionArgument{
+				discordgobot.CommandDefinitionArgument{
 					Pattern: "[a-zA-Z0-9]*",
 					Alias:   "characterName",
 				},
-				command.CommandDefinitionArgument{
+				discordgobot.CommandDefinitionArgument{
 					Pattern: ".*",
 					Alias:   "weaponName",
 				},
@@ -71,16 +67,15 @@ func (p *planetsidetwoPlugin) Commands() []command.CommandDefinition {
 			Description: "Get weapon stats for a player.",
 			Callback:    p.runCharacterWeaponStatsCommand,
 		},
-		command.CommandDefinition{
-			CommandGroup: p.Name(),
-			CommandID:    "ps2-outfit",
+		discordgobot.CommandDefinition{
+			CommandID: "ps2-outfit",
 			Triggers: []string{
 				"ps2o",
 				"ps2o-ps4us",
 				"ps2o-ps4eu",
 			},
-			Arguments: []command.CommandDefinitionArgument{
-				command.CommandDefinitionArgument{
+			Arguments: []discordgobot.CommandDefinitionArgument{
+				discordgobot.CommandDefinitionArgument{
 					Pattern: "[a-zA-Z0-9]{1,4}",
 					Alias:   "outfitAlias",
 				},
@@ -91,17 +86,17 @@ func (p *planetsidetwoPlugin) Commands() []command.CommandDefinition {
 	}
 }
 
-func (p *planetsidetwoPlugin) Help(client *discord.Discord, message discord.Message, detailed bool) []string {
+func (p *planetsidetwoPlugin) Help(client *discordgobot.DiscordClient, message discordgobot.Message, detailed bool) []string {
 	return []string{
-		command.CommandHelp(client, "ps2c", "<character name>", "Get stats for a player."),
-		command.CommandHelp(client, "ps2c-ps4us", "<character name>", "Get stats for a player."),
-		command.CommandHelp(client, "ps2c-ps4eu", "<character name>", "Get stats for a player."),
-		command.CommandHelp(client, "ps2c", "<character name> <weapon name>", "Get weapon stats for a player."),
-		command.CommandHelp(client, "ps2c-ps4us", "<character name> <weapon name>", "Get weapon stats for a player."),
-		command.CommandHelp(client, "ps2c-ps4eu", "<character name> <weapon name>", "Get weapon stats for a player."),
-		command.CommandHelp(client, "ps2o", "<outfit name>", "Get outfit stats"),
-		command.CommandHelp(client, "ps2o-ps4us", "<outfit name>", "Get outfit stats"),
-		command.CommandHelp(client, "ps2o-ps4eu", "<outfit name>", "Get outfit stats"),
+		discordgobot.CommandHelp(client, "ps2c", []string{"character name"}, "Get stats for a player."),
+		discordgobot.CommandHelp(client, "ps2c-ps4us", []string{"character name"}, "Get stats for a player."),
+		discordgobot.CommandHelp(client, "ps2c-ps4eu", []string{"character name"}, "Get stats for a player."),
+		discordgobot.CommandHelp(client, "ps2c", []string{"character name", "weapon name"}, "Get weapon stats for a player."),
+		discordgobot.CommandHelp(client, "ps2c-ps4us", []string{"character name", "weapon name"}, "Get weapon stats for a player."),
+		discordgobot.CommandHelp(client, "ps2c-ps4eu", []string{"character name", "weapon name"}, "Get weapon stats for a player."),
+		discordgobot.CommandHelp(client, "ps2o", []string{"outfit name"}, "Get outfit stats"),
+		discordgobot.CommandHelp(client, "ps2o-ps4us", []string{"outfit name"}, "Get outfit stats"),
+		discordgobot.CommandHelp(client, "ps2o-ps4eu", []string{"outfit name"}, "Get outfit stats"),
 	}
 }
 
@@ -109,7 +104,7 @@ func (p *planetsidetwoPlugin) Name() string {
 	return "PS2Stats"
 }
 
-func (p *planetsidetwoPlugin) runCharacterStatsCommand(client *discord.Discord, message discord.Message, args map[string]string, trigger string) {
+func (p *planetsidetwoPlugin) runCharacterStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
 	if trigger == "ps2c-ps4us" {
 		args["platform"] = "ps4us"
 	} else if trigger == "ps2c-ps4eu" {
@@ -223,7 +218,7 @@ func (p *planetsidetwoPlugin) runCharacterStatsCommand(client *discord.Discord, 
 	p.RUnlock()
 }
 
-func (p *planetsidetwoPlugin) runCharacterWeaponStatsCommand(client *discord.Discord, message discord.Message, args map[string]string, trigger string) {
+func (p *planetsidetwoPlugin) runCharacterWeaponStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
 	if trigger == "ps2c-ps4us" {
 		args["platform"] = "ps4us"
 	} else if trigger == "ps2c-ps4eu" {
@@ -323,7 +318,7 @@ func (p *planetsidetwoPlugin) runCharacterWeaponStatsCommand(client *discord.Dis
 	p.RUnlock()
 }
 
-func (p *planetsidetwoPlugin) runOutfitStatsCommand(client *discord.Discord, message discord.Message, args map[string]string, trigger string) {
+func (p *planetsidetwoPlugin) runOutfitStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
 	if trigger == "ps2c-ps4us" {
 		args["platform"] = "ps4us"
 	} else if trigger == "ps2c-ps4eu" {
@@ -404,12 +399,12 @@ func insertSlice(arr []*discordgo.MessageEmbedField, value *discordgo.MessageEmb
 func voidwellApiGet(uri string) (json.RawMessage, error) {
 	if voidwellClient == nil {
 		voidwellClientConfig := clientcredentials.Config{
-			ClientID: os.Getenv("VoidwellClientId"),
+			ClientID:     os.Getenv("VoidwellClientId"),
 			ClientSecret: os.Getenv("VoidwellClientSecret"),
-			TokenURL: "https://auth.voidwell.com/connect/token",
-			Scopes: []string{"voidwell-daybreakgames", "voidwell-api"},
+			TokenURL:     "https://auth.voidwell.com/connect/token",
+			Scopes:       []string{"voidwell-daybreakgames", "voidwell-api"},
 		}
-		
+
 		ctx := context.Background()
 		voidwellClient = voidwellClientConfig.Client(ctx)
 	}

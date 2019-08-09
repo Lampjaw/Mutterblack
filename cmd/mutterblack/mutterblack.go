@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"time"
 
-	"github.com/lampjaw/mutterblack/pkg/bot"
-	"github.com/lampjaw/mutterblack/internal/pkg/plugin/invite"
-	"github.com/lampjaw/mutterblack/internal/pkg/plugin/planetsidetwo"
-	"github.com/lampjaw/mutterblack/internal/pkg/plugin/stats"
-	"github.com/lampjaw/mutterblack/internal/pkg/plugin/translator"
+	"github.com/lampjaw/discordgobot"
+	inviteplugin "github.com/lampjaw/mutterblack/pkg/plugins/invite"
+	planetsidetwoplugin "github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo"
+	statsplugin "github.com/lampjaw/mutterblack/pkg/plugins/stats"
+	translatorplugin "github.com/lampjaw/mutterblack/pkg/plugins/translator"
 )
+
+// VERSION of Mutterblack
+const VERSION = "2.0.0"
 
 func init() {
 	token = os.Getenv("Token")
@@ -25,14 +27,17 @@ var ownerUserID string
 var buffer = make([][]byte, 0)
 
 func main() {
-	q := make(chan bool)
-
 	if token == "" {
 		fmt.Println("No token provided.")
 		return
 	}
 
-	bot := bot.NewBot(token, clientID, ownerUserID)
+	bot, err := discordgobot.NewBot(token, "?", clientID, ownerUserID)
+
+	if err != nil {
+		fmt.Sprintln("Unable to create bot: %s", err)
+		return
+	}
 
 	bot.RegisterPlugin(inviteplugin.New())
 	bot.RegisterPlugin(statsplugin.New())
@@ -44,19 +49,11 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)
 
-	t := time.Tick(1 * time.Minute)
-
 out:
 	for {
 		select {
-		case <-q:
-			break out
 		case <-c:
 			break out
-		case <-t:
-			bot.Save()
 		}
 	}
-
-	bot.Save()
 }

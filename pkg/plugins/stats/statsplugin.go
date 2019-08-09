@@ -8,26 +8,23 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/lampjaw/mutterblack/internal/pkg/plugin"
-	"github.com/lampjaw/mutterblack/pkg/command"
-	"github.com/lampjaw/mutterblack/pkg/discord"
 	"github.com/bwmarrin/discordgo"
 	"github.com/dustin/go-humanize"
+	"github.com/lampjaw/discordgobot"
 )
 
 type statsPlugin struct {
-	plugin.Plugin
+	discordgobot.Plugin
 }
 
-func New() plugin.IPlugin {
+func New() discordgobot.IPlugin {
 	return &statsPlugin{}
 }
 
-func (p *statsPlugin) Commands() []command.CommandDefinition {
-	return []command.CommandDefinition{
-		command.CommandDefinition{
-			CommandGroup: p.Name(),
-			CommandID:    "stats",
+func (p *statsPlugin) Commands() []discordgobot.CommandDefinition {
+	return []discordgobot.CommandDefinition{
+		discordgobot.CommandDefinition{
+			CommandID: "stats",
 			Triggers: []string{
 				"stats",
 			},
@@ -52,7 +49,7 @@ func getDurationString(duration time.Duration) string {
 	)
 }
 
-func (p *statsPlugin) runStatsCommand(client *discord.Discord, message discord.Message, args map[string]string, trigger string) {
+func (p *statsPlugin) runStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
 	stats := runtime.MemStats{}
 	runtime.ReadMemStats(&stats)
 
@@ -62,6 +59,7 @@ func (p *statsPlugin) runStatsCommand(client *discord.Discord, message discord.M
 	w.Init(buf, 0, 4, 0, ' ', 0)
 	fmt.Fprintf(w, "```\n")
 	fmt.Fprintf(w, "Discordgo: \t%s\n", discordgo.VERSION)
+	fmt.Fprintf(w, "discordgobot: \t%s\n", discordgobot.VERSION)
 	fmt.Fprintf(w, "Go: \t%s\n", runtime.Version())
 	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(statsStartTime)))
 	fmt.Fprintf(w, "Memory used: \t%s / %s (%s garbage collected)\n", humanize.Bytes(stats.Alloc), humanize.Bytes(stats.Sys), humanize.Bytes(stats.TotalAlloc))
@@ -100,5 +98,7 @@ func (p *statsPlugin) runStatsCommand(client *discord.Discord, message discord.M
 		out += "\n" + end
 	}
 
+	p.RLock()
 	client.SendMessage(message.Channel(), out)
+	p.RUnlock()
 }

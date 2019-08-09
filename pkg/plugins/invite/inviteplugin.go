@@ -4,23 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lampjaw/mutterblack/internal/pkg/plugin"
-	"github.com/lampjaw/mutterblack/pkg/command"
-	"github.com/lampjaw/mutterblack/pkg/discord"
+	"github.com/lampjaw/discordgobot"
 )
 
 type invitePlugin struct {
-	plugin.Plugin
+	discordgobot.Plugin
 }
 
-func New() plugin.IPlugin {
+func New() discordgobot.IPlugin {
 	return &invitePlugin{}
 }
 
-func (p *invitePlugin) Commands() []command.CommandDefinition {
-	return []command.CommandDefinition{
-		command.CommandDefinition{
-			CommandGroup: p.Name(),
+func (p *invitePlugin) Commands() []discordgobot.CommandDefinition {
+	return []discordgobot.CommandDefinition{
+		discordgobot.CommandDefinition{
 			CommandID:    "invite",
 			Triggers: []string{
 				"invite",
@@ -35,7 +32,7 @@ func (p *invitePlugin) Name() string {
 	return "Invite"
 }
 
-func (p *invitePlugin) runInviteCommand(client *discord.Discord, message discord.Message, args map[string]string, trigger string) {
+func (p *invitePlugin) runInviteCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
 	if client.ApplicationClientID != "" {
 		client.SendMessage(message.Channel(), fmt.Sprintf("Please visit <https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot> to add %s to your server.", client.ApplicationClientID, client.UserName()))
 		return

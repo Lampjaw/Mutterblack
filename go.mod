@@ -5,24 +5,17 @@ go 1.12
 require (
 	github.com/bwmarrin/discordgo v0.19.0
 	github.com/dustin/go-humanize v1.0.0
-	github.com/lampjaw/mutterblack/internal/pkg/plugin v0.0.0
-	github.com/lampjaw/mutterblack/internal/pkg/plugin/invite v0.0.0
-	github.com/lampjaw/mutterblack/internal/pkg/plugin/planetsidetwo v0.0.0
-	github.com/lampjaw/mutterblack/internal/pkg/plugin/stats v0.0.0
-	github.com/lampjaw/mutterblack/internal/pkg/plugin/translator v0.0.0
-	github.com/lampjaw/mutterblack/pkg/bot v0.0.0
-	github.com/lampjaw/mutterblack/pkg/command v0.0.0
-	github.com/lampjaw/mutterblack/pkg/discord v0.0.0
+	github.com/lampjaw/discordgobot v0.0.0-20190809181220-b17aec24090a
+	github.com/lampjaw/mutterblack/pkg/plugins/invite v0.0.0
+	github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo v0.0.0
+	github.com/lampjaw/mutterblack/pkg/plugins/stats v0.0.0
+	github.com/lampjaw/mutterblack/pkg/plugins/translator v0.0.0
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 )
 
 replace (
-	github.com/lampjaw/mutterblack/internal/pkg/plugin => ./internal/pkg/plugin
-	github.com/lampjaw/mutterblack/internal/pkg/plugin/invite => ./internal/pkg/plugin/invite
-	github.com/lampjaw/mutterblack/internal/pkg/plugin/planetsidetwo => ./internal/pkg/plugin/planetsidetwo
-	github.com/lampjaw/mutterblack/internal/pkg/plugin/stats => ./internal/pkg/plugin/stats
-	github.com/lampjaw/mutterblack/internal/pkg/plugin/translator => ./internal/pkg/plugin/translator
-	github.com/lampjaw/mutterblack/pkg/bot => ./pkg/bot
-	github.com/lampjaw/mutterblack/pkg/command => ./pkg/command
-	github.com/lampjaw/mutterblack/pkg/discord => ./pkg/discord
+	github.com/lampjaw/mutterblack/pkg/plugins/invite => ./pkg/plugins/invite
+	github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo => ./pkg/plugins/planetsidetwo
+	github.com/lampjaw/mutterblack/pkg/plugins/stats => ./pkg/plugins/stats
+	github.com/lampjaw/mutterblack/pkg/plugins/translator => ./pkg/plugins/translator
 )
