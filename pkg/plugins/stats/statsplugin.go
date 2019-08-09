@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"runtime"
+	"sort"
 	"strconv"
 	"text/tabwriter"
 	"time"
@@ -83,6 +84,20 @@ func (p *statsPlugin) runStatsCommand(bot *discordgobot.Gobot, client *discordgo
 			if err == nil {
 				fmt.Fprintf(w, "Current shard: \t%d\n", ((id>>22)%len(client.Sessions) + 1))
 			}
+		}
+	}
+
+	if client.IsBotOwner(message) {
+		guilds := client.Guilds()
+
+		sort.SliceStable(guilds, func(i, j int) bool {
+			return guilds[i].MemberCount > guilds[j].MemberCount
+		})
+
+		fmt.Fprintf(w, "Connected Guilds:")
+
+		for _, guild := range client.Guilds() {
+			fmt.Fprintf(w, "%s: \t%d\n", guild.Name, guild.MemberCount)
 		}
 	}
 
