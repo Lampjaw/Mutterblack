@@ -3,6 +3,7 @@ package planetsidetwoplugin
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -418,6 +419,10 @@ func voidwellApiGet(uri string) (json.RawMessage, error) {
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
 
 	var jsonResponse json.RawMessage
 	err = json.Unmarshal(body, &jsonResponse)
