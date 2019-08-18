@@ -6,15 +6,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o mutterblack ./cmd/mutterblack/mutterblack.go
-
-# Build runtime image
-FROM alpine:latest
-
-RUN apk --no-cache add ca-certificates
-
-WORKDIR /app
-
-COPY --from=build-env /app/mutterblack .
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o mutterblack ./cmd/mutterblack/mutterblack.go
 
 CMD [ "./mutterblack" ]
