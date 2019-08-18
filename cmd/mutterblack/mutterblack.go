@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/lampjaw/discordgobot"
+	commandplugin "github.com/lampjaw/mutterblack/pkg/plugins/command"
 	inviteplugin "github.com/lampjaw/mutterblack/pkg/plugins/invite"
 	planetsidetwoplugin "github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo"
 	statsplugin "github.com/lampjaw/mutterblack/pkg/plugins/stats"
@@ -14,7 +15,7 @@ import (
 )
 
 // VERSION of Mutterblack
-const VERSION = "2.0.0"
+const VERSION = "2.1.0"
 
 func init() {
 	token = os.Getenv("Token")
@@ -33,15 +34,33 @@ func main() {
 		return
 	}
 
-	bot, err := discordgobot.NewBot(token, "?", clientID, ownerUserID)
+	commandPlugin := commandplugin.New()
+
+	config := &discordgobot.GobotConf{
+		OwnerUserID: ownerUserID,
+		ClientID:    clientID,
+		CommandPrefixFunc: func(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message) string {
+			channel, _ := client.Channel(message.Channel())
+			prefix, err := commandPlugin.GetGuildPrefix(channel.GuildID)
+
+			if err != nil || prefix == nil {
+				return "?"
+			}
+
+			return *prefix
+		},
+	}
+
+	bot, err := discordgobot.NewBot(token, config)
 
 	if err != nil {
 		fmt.Sprintln("Unable to create bot: %s", err)
 		return
 	}
 
+	bot.RegisterPlugin(commandPlugin)
 	bot.RegisterPlugin(inviteplugin.New())
-	bot.RegisterPlugin(statsplugin.New())
+	bot.RegisterPlugin(statsplugin.New(VERSION))
 	bot.RegisterPlugin(planetsidetwoplugin.New())
 	bot.RegisterPlugin(translatorplugin.New())
 

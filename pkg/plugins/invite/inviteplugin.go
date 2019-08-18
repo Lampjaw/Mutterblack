@@ -2,7 +2,6 @@ package inviteplugin
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/lampjaw/discordgobot"
 )
@@ -18,7 +17,7 @@ func New() discordgobot.IPlugin {
 func (p *invitePlugin) Commands() []discordgobot.CommandDefinition {
 	return []discordgobot.CommandDefinition{
 		discordgobot.CommandDefinition{
-			CommandID:    "invite",
+			CommandID: "invite",
 			Triggers: []string{
 				"invite",
 			},
@@ -33,15 +32,10 @@ func (p *invitePlugin) Name() string {
 }
 
 func (p *invitePlugin) runInviteCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
-	if client.ApplicationClientID != "" {
-		client.SendMessage(message.Channel(), fmt.Sprintf("Please visit <https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot> to add %s to your server.", client.ApplicationClientID, client.UserName()))
+	if bot.Config != nil && bot.Config.ClientID != "" {
+		client.SendMessage(message.Channel(),
+			fmt.Sprintf("Please visit <https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot> to add %s to your server.",
+				bot.Config.ClientID, client.UserName()))
 		return
 	}
-}
-
-func discordInviteID(id string) string {
-	id = strings.Replace(id, "://discordapp.com/invite/", "://discord.gg/", -1)
-	id = strings.Replace(id, "https://discord.gg/", "", -1)
-	id = strings.Replace(id, "http://discord.gg/", "", -1)
-	return id
 }

@@ -15,10 +15,13 @@ import (
 
 type statsPlugin struct {
 	discordgobot.Plugin
+	version string
 }
 
-func New() discordgobot.IPlugin {
-	return &statsPlugin{}
+func New(appVersion string) *statsPlugin {
+	return &statsPlugin{
+		version: appVersion,
+	}
 }
 
 func (p *statsPlugin) Commands() []discordgobot.CommandDefinition {
@@ -58,6 +61,7 @@ func (p *statsPlugin) runStatsCommand(bot *discordgobot.Gobot, client *discordgo
 
 	w.Init(buf, 0, 4, 0, ' ', 0)
 	fmt.Fprintf(w, "```\n")
+	fmt.Fprintf(w, "Mutterblack: \t%s\n", p.version)
 	fmt.Fprintf(w, "discordgobot: \t%s\n", discordgobot.VERSION)
 	fmt.Fprintf(w, "Go: \t%s\n", runtime.Version())
 	fmt.Fprintf(w, "Uptime: \t%s\n", getDurationString(time.Now().Sub(statsStartTime)))

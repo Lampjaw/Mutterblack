@@ -87,17 +87,19 @@ func (p *planetsidetwoPlugin) Commands() []discordgobot.CommandDefinition {
 	}
 }
 
-func (p *planetsidetwoPlugin) Help(client *discordgobot.DiscordClient, message discordgobot.Message, detailed bool) []string {
+func (p *planetsidetwoPlugin) Help(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, detailed bool) []string {
+	commandPrefix := bot.GetCommandPrefix(message)
+
 	return []string{
-		discordgobot.CommandHelp(client, "ps2c", []string{"character name"}, "Get stats for a player."),
-		discordgobot.CommandHelp(client, "ps2c-ps4us", []string{"character name"}, "Get stats for a player."),
-		discordgobot.CommandHelp(client, "ps2c-ps4eu", []string{"character name"}, "Get stats for a player."),
-		discordgobot.CommandHelp(client, "ps2c", []string{"character name", "weapon name"}, "Get weapon stats for a player."),
-		discordgobot.CommandHelp(client, "ps2c-ps4us", []string{"character name", "weapon name"}, "Get weapon stats for a player."),
-		discordgobot.CommandHelp(client, "ps2c-ps4eu", []string{"character name", "weapon name"}, "Get weapon stats for a player."),
-		discordgobot.CommandHelp(client, "ps2o", []string{"outfit name"}, "Get outfit stats"),
-		discordgobot.CommandHelp(client, "ps2o-ps4us", []string{"outfit name"}, "Get outfit stats"),
-		discordgobot.CommandHelp(client, "ps2o-ps4eu", []string{"outfit name"}, "Get outfit stats"),
+		discordgobot.CommandHelp(client, "ps2c", []string{"character name"}, "Get stats for a player.", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2c-ps4us", []string{"character name"}, "Get stats for a player.", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2c-ps4eu", []string{"character name"}, "Get stats for a player.", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2c", []string{"character name", "weapon name"}, "Get weapon stats for a player.", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2c-ps4us", []string{"character name", "weapon name"}, "Get weapon stats for a player.", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2c-ps4eu", []string{"character name", "weapon name"}, "Get weapon stats for a player.", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2o", []string{"outfit name"}, "Get outfit stats", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2o-ps4us", []string{"outfit name"}, "Get outfit stats", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2o-ps4eu", []string{"outfit name"}, "Get outfit stats", commandPrefix),
 	}
 }
 
@@ -114,7 +116,7 @@ func (p *planetsidetwoPlugin) runCharacterStatsCommand(bot *discordgobot.Gobot, 
 		args["platform"] = "pc"
 	}
 
-	resp, err := voidwellApiGet(fmt.Sprintf("https://voidwell.com/api/ps2/character/byname/%s?platform=%s", args["characterName"], args["platform"]))
+	resp, err := voidwellAPIGet(fmt.Sprintf("https://voidwell.com/api/ps2/character/byname/%s?platform=%s", args["characterName"], args["platform"]))
 
 	if err != nil {
 		p.RLock()
@@ -228,7 +230,7 @@ func (p *planetsidetwoPlugin) runCharacterWeaponStatsCommand(bot *discordgobot.G
 		args["platform"] = "pc"
 	}
 
-	resp, err := voidwellApiGet(fmt.Sprintf("https://voidwell.com/api/ps2/character/byname/%s/weapon/%s?platform=%s", args["characterName"], args["weaponName"], args["platform"]))
+	resp, err := voidwellAPIGet(fmt.Sprintf("https://voidwell.com/api/ps2/character/byname/%s/weapon/%s?platform=%s", args["characterName"], args["weaponName"], args["platform"]))
 
 	if err != nil {
 		p.RLock()
@@ -328,7 +330,7 @@ func (p *planetsidetwoPlugin) runOutfitStatsCommand(bot *discordgobot.Gobot, cli
 		args["platform"] = "pc"
 	}
 
-	resp, err := voidwellApiGet(fmt.Sprintf("https://voidwell.com/api/ps2/outfit/byalias/%s?platform=%s", args["outfitAlias"], args["platform"]))
+	resp, err := voidwellAPIGet(fmt.Sprintf("https://voidwell.com/api/ps2/outfit/byalias/%s?platform=%s", args["outfitAlias"], args["platform"]))
 
 	if err != nil {
 		p.RLock()
@@ -389,15 +391,15 @@ func (p *planetsidetwoPlugin) runOutfitStatsCommand(bot *discordgobot.Gobot, cli
 	p.RUnlock()
 }
 
-func createCensusImageURI(imageId int) string {
-	return CENSUS_IMAGEBASE_URI + fmt.Sprintf("%v", imageId) + ".png"
+func createCensusImageURI(imageID int) string {
+	return CENSUS_IMAGEBASE_URI + fmt.Sprintf("%v", imageID) + ".png"
 }
 
 func insertSlice(arr []*discordgo.MessageEmbedField, value *discordgo.MessageEmbedField, index int) []*discordgo.MessageEmbedField {
 	return append(arr[:index], append([]*discordgo.MessageEmbedField{value}, arr[index:]...)...)
 }
 
-func voidwellApiGet(uri string) (json.RawMessage, error) {
+func voidwellAPIGet(uri string) (json.RawMessage, error) {
 	if voidwellClient == nil {
 		voidwellClientConfig := clientcredentials.Config{
 			ClientID:     os.Getenv("VoidwellClientId"),
