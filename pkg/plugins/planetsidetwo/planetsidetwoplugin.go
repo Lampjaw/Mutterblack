@@ -451,12 +451,17 @@ func (p *planetsidetwoPlugin) runWeaponStatsCommand(bot *discordgobot.Gobot, cli
 			Value:  weapon.Range,
 			Inline: true,
 		},
-		&discordgo.MessageEmbedField{
-			Name:   "Fire rate",
-			Value:  fmt.Sprintf("%d RPM (%0.2f s)", 60000/weapon.FireRateMs, float32(weapon.FireRateMs)/1000),
-			Inline: true,
-		},
 	)
+
+	if weapon.FireRateMs > 0 {
+		fields = append(fields,
+			&discordgo.MessageEmbedField{
+				Name:   "Fire rate",
+				Value:  fmt.Sprintf("%d RPM (%0.2f s)", 60000/weapon.FireRateMs, float32(weapon.FireRateMs)/1000),
+				Inline: true,
+			},
+		)
+	}
 
 	if weapon.DamageRadius > 0 {
 		fields = append(fields,
