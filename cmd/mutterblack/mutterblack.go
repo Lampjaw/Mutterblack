@@ -5,16 +5,17 @@ import (
 	"os"
 	"os/signal"
 
+	commandplugin "mutterblack/pkg/plugins/command"
+	inviteplugin "mutterblack/pkg/plugins/invite"
+	planetsidetwoplugin "mutterblack/pkg/plugins/planetsidetwo"
+	statsplugin "mutterblack/pkg/plugins/stats"
+	translatorplugin "mutterblack/pkg/plugins/translator"
+
 	"github.com/lampjaw/discordgobot"
-	commandplugin "github.com/lampjaw/mutterblack/pkg/plugins/command"
-	inviteplugin "github.com/lampjaw/mutterblack/pkg/plugins/invite"
-	planetsidetwoplugin "github.com/lampjaw/mutterblack/pkg/plugins/planetsidetwo"
-	statsplugin "github.com/lampjaw/mutterblack/pkg/plugins/stats"
-	translatorplugin "github.com/lampjaw/mutterblack/pkg/plugins/translator"
 )
 
 // VERSION of Mutterblack
-const VERSION = "2.1.0"
+const VERSION = "3.0.0"
 
 func init() {
 	token = os.Getenv("Token")
@@ -50,7 +51,7 @@ func main() {
 		},
 	}
 
-	bot, err := discordgobot.NewBot(token, config)
+	bot, err := discordgobot.NewBot(token, config, nil)
 
 	if err != nil {
 		fmt.Sprintln("Unable to create bot: %s", err)

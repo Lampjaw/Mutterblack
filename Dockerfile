@@ -1,11 +1,20 @@
-FROM golang:1.12.7 AS build-env
+FROM golang:1.12.7-alpine AS build-env
 
-ENV GO111MODULE=on
+RUN apk add -U --no-cache build-base git
 
-WORKDIR /app
+RUN mkdir /build
+RUN mkdir /bot
+WORKDIR /bot
 
-COPY . .
+ADD . .
 
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o mutterblack ./cmd/mutterblack/mutterblack.go
+RUN go get -d ./... && \
+    go build -v -o /build/bot ./cmd/mutterblack
 
-CMD [ "./mutterblack" ]
+FROM alpine:latest
+
+RUN apk add -U --no-cache iputils ca-certificates
+
+COPY --from=build-env /build /bin
+
+CMD [ "/bin/bot" ]

@@ -16,10 +16,10 @@ func New() discordgobot.IPlugin {
 	return &translatorPlugin{}
 }
 
-func (p *translatorPlugin) Commands() []discordgobot.CommandDefinition {
-	return []discordgobot.CommandDefinition{
-		discordgobot.CommandDefinition{
-			CommandID:    "twanswate",
+func (p *translatorPlugin) Commands() []*discordgobot.CommandDefinition {
+	return []*discordgobot.CommandDefinition{
+		&discordgobot.CommandDefinition{
+			CommandID: "twanswate",
 			Triggers: []string{
 				"twanswate",
 			},
@@ -33,7 +33,8 @@ func (p *translatorPlugin) Name() string {
 	return "translator"
 }
 
-func (p *translatorPlugin) runTwanswateCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
+func (p *translatorPlugin) runTwanswateCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, payload discordgobot.CommandPayload) {
+	message := payload.Message
 	previousMessages, err := client.GetMessages(message.Channel(), 1, message.MessageID())
 
 	if err != nil {

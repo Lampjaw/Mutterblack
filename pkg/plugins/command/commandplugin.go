@@ -21,9 +21,9 @@ func New() *commandPlugin {
 	return plugin
 }
 
-func (p *commandPlugin) Commands() []discordgobot.CommandDefinition {
-	return []discordgobot.CommandDefinition{
-		discordgobot.CommandDefinition{
+func (p *commandPlugin) Commands() []*discordgobot.CommandDefinition {
+	return []*discordgobot.CommandDefinition{
+		&discordgobot.CommandDefinition{
 			CommandID: "command-setprefix",
 			Triggers: []string{
 				"setprefix",
@@ -47,7 +47,9 @@ func (p *commandPlugin) Name() string {
 	return "Command"
 }
 
-func (p *commandPlugin) runSetPrefixCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
+func (p *commandPlugin) runSetPrefixCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, payload discordgobot.CommandPayload) {
+	args, message := payload.Arguments, payload.Message
+
 	prefix := args["prefix"]
 
 	channel, _ := client.Channel(message.Channel())

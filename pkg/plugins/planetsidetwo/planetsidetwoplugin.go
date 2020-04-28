@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -30,9 +31,9 @@ func New() discordgobot.IPlugin {
 	return &planetsidetwoPlugin{}
 }
 
-func (p *planetsidetwoPlugin) Commands() []discordgobot.CommandDefinition {
-	return []discordgobot.CommandDefinition{
-		discordgobot.CommandDefinition{
+func (p *planetsidetwoPlugin) Commands() []*discordgobot.CommandDefinition {
+	return []*discordgobot.CommandDefinition{
+		&discordgobot.CommandDefinition{
 			CommandID: "ps2-character",
 			Triggers: []string{
 				"ps2c",
@@ -48,7 +49,7 @@ func (p *planetsidetwoPlugin) Commands() []discordgobot.CommandDefinition {
 			Description: "Get stats for a player.",
 			Callback:    p.runCharacterStatsCommand,
 		},
-		discordgobot.CommandDefinition{
+		&discordgobot.CommandDefinition{
 			CommandID: "ps2-character-weapons",
 			Triggers: []string{
 				"ps2c",
@@ -68,7 +69,7 @@ func (p *planetsidetwoPlugin) Commands() []discordgobot.CommandDefinition {
 			Description: "Get weapon stats for a player.",
 			Callback:    p.runCharacterWeaponStatsCommand,
 		},
-		discordgobot.CommandDefinition{
+		&discordgobot.CommandDefinition{
 			CommandID: "ps2-outfit",
 			Triggers: []string{
 				"ps2o",
@@ -83,6 +84,20 @@ func (p *planetsidetwoPlugin) Commands() []discordgobot.CommandDefinition {
 			},
 			Description: "Get outfit stats by outfit tag.",
 			Callback:    p.runOutfitStatsCommand,
+		},
+		&discordgobot.CommandDefinition{
+			CommandID: "ps2-weapon",
+			Triggers: []string{
+				"ps2w",
+			},
+			Arguments: []discordgobot.CommandDefinitionArgument{
+				discordgobot.CommandDefinitionArgument{
+					Pattern: ".*",
+					Alias:   "weaponName",
+				},
+			},
+			Description: "Get weapon stats by weapon name.",
+			Callback:    p.runWeaponStatsCommand,
 		},
 	}
 }
@@ -100,6 +115,7 @@ func (p *planetsidetwoPlugin) Help(bot *discordgobot.Gobot, client *discordgobot
 		discordgobot.CommandHelp(client, "ps2o", []string{"outfit name"}, "Get outfit stats", commandPrefix),
 		discordgobot.CommandHelp(client, "ps2o-ps4us", []string{"outfit name"}, "Get outfit stats", commandPrefix),
 		discordgobot.CommandHelp(client, "ps2o-ps4eu", []string{"outfit name"}, "Get outfit stats", commandPrefix),
+		discordgobot.CommandHelp(client, "ps2w", []string{"weapon name"}, "Get weapon stats", commandPrefix),
 	}
 }
 
@@ -107,7 +123,9 @@ func (p *planetsidetwoPlugin) Name() string {
 	return "PS2Stats"
 }
 
-func (p *planetsidetwoPlugin) runCharacterStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
+func (p *planetsidetwoPlugin) runCharacterStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, payload discordgobot.CommandPayload) {
+	trigger, args, message := payload.Trigger, payload.Arguments, payload.Message
+
 	if trigger == "ps2c-ps4us" {
 		args["platform"] = "ps4us"
 	} else if trigger == "ps2c-ps4eu" {
@@ -221,7 +239,9 @@ func (p *planetsidetwoPlugin) runCharacterStatsCommand(bot *discordgobot.Gobot, 
 	p.RUnlock()
 }
 
-func (p *planetsidetwoPlugin) runCharacterWeaponStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
+func (p *planetsidetwoPlugin) runCharacterWeaponStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, payload discordgobot.CommandPayload) {
+	trigger, args, message := payload.Trigger, payload.Arguments, payload.Message
+
 	if trigger == "ps2c-ps4us" {
 		args["platform"] = "ps4us"
 	} else if trigger == "ps2c-ps4eu" {
@@ -321,7 +341,9 @@ func (p *planetsidetwoPlugin) runCharacterWeaponStatsCommand(bot *discordgobot.G
 	p.RUnlock()
 }
 
-func (p *planetsidetwoPlugin) runOutfitStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
+func (p *planetsidetwoPlugin) runOutfitStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, payload discordgobot.CommandPayload) {
+	trigger, args, message := payload.Trigger, payload.Arguments, payload.Message
+
 	if trigger == "ps2c-ps4us" {
 		args["platform"] = "ps4us"
 	} else if trigger == "ps2c-ps4eu" {
@@ -391,6 +413,156 @@ func (p *planetsidetwoPlugin) runOutfitStatsCommand(bot *discordgobot.Gobot, cli
 	p.RUnlock()
 }
 
+func (p *planetsidetwoPlugin) runWeaponStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, payload discordgobot.CommandPayload) {
+	args, message := payload.Arguments, payload.Message
+
+	resp, err := voidwellAPIGet(fmt.Sprintf("https://voidwell.com/api/ps2/weaponinfo/byname/%s", args["weaponName"]))
+
+	if err != nil {
+		p.RLock()
+		client.SendMessage(message.Channel(), fmt.Sprintf("%s", err))
+		p.RUnlock()
+		return
+	}
+
+	var weapon PlanetsideWeapon
+	json.Unmarshal(resp, &weapon)
+
+	fields := make([]*discordgo.MessageEmbedField, 0)
+
+	factionRestriction := "None"
+	if weapon.FactionID > 0 {
+		factionRestriction = getFactionName(weapon.FactionID)
+	}
+
+	fields = append(fields,
+		&discordgo.MessageEmbedField{
+			Name:   "Type",
+			Value:  weapon.Category,
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
+			Name:   "Faction restriction",
+			Value:  factionRestriction,
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
+			Name:   "Range",
+			Value:  weapon.Range,
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
+			Name:   "Fire rate",
+			Value:  fmt.Sprintf("%d RPM (%0.2f s)", 60000/weapon.FireRateMs, float32(weapon.FireRateMs)/1000),
+			Inline: true,
+		},
+	)
+
+	if weapon.DamageRadius > 0 {
+		fields = append(fields,
+			&discordgo.MessageEmbedField{
+				Name:   "Damage radius",
+				Value:  fmt.Sprintf("%d", weapon.DamageRadius),
+				Inline: true,
+			},
+		)
+	}
+
+	fields = append(fields,
+		&discordgo.MessageEmbedField{
+			Name:   "Muzzle velocity",
+			Value:  fmt.Sprintf("%d m/sec", weapon.MuzzleVelocity),
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
+			Name:   "Reload speed",
+			Value:  fmt.Sprintf("%0.3f sec / %0.3f sec", float32(weapon.MinReloadSpeed)/1000, float32(weapon.MaxReloadSpeed)/1000),
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
+			Name:   "Ammunition",
+			Value:  fmt.Sprintf("%d / %d", weapon.ClipSize, weapon.Capacity),
+			Inline: true,
+		},
+	)
+
+	if weapon.IronSightZoom > 0 {
+		fields = append(fields,
+			&discordgo.MessageEmbedField{
+				Name:   "Iron sight zoom",
+				Value:  fmt.Sprintf("%0.2f", weapon.IronSightZoom),
+				Inline: true,
+			},
+		)
+	}
+
+	fields = append(fields,
+		&discordgo.MessageEmbedField{
+			Name:   "Fire modes",
+			Value:  strings.Join(weapon.FireModes, " / "),
+			Inline: false,
+		},
+	)
+
+	if !weapon.IsVehicleWeapon {
+		fields = append(fields,
+			&discordgo.MessageEmbedField{
+				Name:   "Damage",
+				Value:  fmt.Sprintf("%d / %dm / %d / %dm", weapon.MaxDamage, weapon.MaxDamageRange, weapon.MinDamage, weapon.MinDamageRange),
+				Inline: false,
+			},
+		)
+	}
+
+	if !weapon.IsVehicleWeapon && weapon.IndirectMaxDamage > 0 {
+		fields = append(fields,
+			&discordgo.MessageEmbedField{
+				Name:   "Indirect damage",
+				Value:  fmt.Sprintf("%d / %0.fm / %d / %0.fm", weapon.IndirectMaxDamage, weapon.IndirectMaxDamageRange, weapon.IndirectMinDamage, weapon.IndirectMinDamageRange),
+				Inline: false,
+			},
+		)
+	}
+
+	if !weapon.IsVehicleWeapon && weapon.HipAcc != nil {
+		fields = append(fields,
+			&discordgo.MessageEmbedField{
+				Name:   "Hip accuracy",
+				Value:  fmt.Sprintf("%0.2f / %0.2f / %0.2f / %0.2f / %0.2f", weapon.HipAcc.Crouching, weapon.HipAcc.CrouchWalking, weapon.HipAcc.Standing, weapon.HipAcc.Running, weapon.HipAcc.Cof),
+				Inline: false,
+			},
+		)
+	}
+
+	if !weapon.IsVehicleWeapon && weapon.AimAcc != nil {
+		fields = append(fields,
+			&discordgo.MessageEmbedField{
+				Name:   "Aim accuracy",
+				Value:  fmt.Sprintf("%0.2f / %0.2f / %0.2f / %0.2f / %0.2f", weapon.AimAcc.Crouching, weapon.AimAcc.CrouchWalking, weapon.AimAcc.Standing, weapon.AimAcc.Running, weapon.AimAcc.Cof),
+				Inline: false,
+			},
+		)
+	}
+
+	embed := &discordgo.MessageEmbed{
+		Author: &discordgo.MessageEmbedAuthor{
+			Name: weapon.Name,
+		},
+		Title: "Click here for full stats",
+		URL:   fmt.Sprintf("%sps2/item/%d", VOIDWELL_URI, weapon.ItemID),
+		Color: 0x070707,
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: createCensusImageURI(weapon.ImageID),
+		},
+		Description: weapon.Description,
+		Fields:      fields,
+	}
+
+	p.RLock()
+	client.SendEmbedMessage(message.Channel(), embed)
+	p.RUnlock()
+}
+
 func createCensusImageURI(imageID int) string {
 	return CENSUS_IMAGEBASE_URI + fmt.Sprintf("%v", imageID) + ".png"
 }
@@ -435,4 +607,19 @@ func voidwellAPIGet(uri string) (json.RawMessage, error) {
 	}
 
 	return jsonResponse, nil
+}
+
+func getFactionName(factionID int) string {
+	switch factionID {
+	case 1:
+		return "Vanu Sovereignty"
+	case 2:
+		return "New Conglomerate"
+	case 3:
+		return "Terran Republic"
+	case 4:
+		return "NS Operatives"
+	}
+
+	return "Unknown"
 }

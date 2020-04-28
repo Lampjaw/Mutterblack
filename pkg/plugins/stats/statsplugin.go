@@ -24,9 +24,9 @@ func New(appVersion string) *statsPlugin {
 	}
 }
 
-func (p *statsPlugin) Commands() []discordgobot.CommandDefinition {
-	return []discordgobot.CommandDefinition{
-		discordgobot.CommandDefinition{
+func (p *statsPlugin) Commands() []*discordgobot.CommandDefinition {
+	return []*discordgobot.CommandDefinition{
+		&discordgobot.CommandDefinition{
 			CommandID: "stats",
 			Triggers: []string{
 				"stats",
@@ -52,7 +52,8 @@ func getDurationString(duration time.Duration) string {
 	)
 }
 
-func (p *statsPlugin) runStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, message discordgobot.Message, args map[string]string, trigger string) {
+func (p *statsPlugin) runStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, payload discordgobot.CommandPayload) {
+	message := payload.Message
 	stats := runtime.MemStats{}
 	runtime.ReadMemStats(&stats)
 
