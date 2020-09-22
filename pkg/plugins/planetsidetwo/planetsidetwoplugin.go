@@ -134,7 +134,7 @@ func (p *planetsidetwoPlugin) runCharacterStatsCommand(bot *discordgobot.Gobot, 
 		args["platform"] = "pc"
 	}
 
-	resp, err := voidwellAPIGet(fmt.Sprintf("https://voidwell.com/api/ps2/character/byname/%s?platform=%s", args["characterName"], args["platform"]))
+	resp, err := voidwellAPIGet(fmt.Sprintf("https://api.voidwell.com/ps2/character/byname/%s?platform=%s", args["characterName"], args["platform"]))
 
 	if err != nil {
 		p.RLock()
@@ -250,7 +250,7 @@ func (p *planetsidetwoPlugin) runCharacterWeaponStatsCommand(bot *discordgobot.G
 		args["platform"] = "pc"
 	}
 
-	resp, err := voidwellAPIGet(fmt.Sprintf("https://voidwell.com/api/ps2/character/byname/%s/weapon/%s?platform=%s", args["characterName"], args["weaponName"], args["platform"]))
+	resp, err := voidwellAPIGet(fmt.Sprintf("https://api.voidwell.com/ps2/character/byname/%s/weapon/%s?platform=%s", args["characterName"], args["weaponName"], args["platform"]))
 
 	if err != nil {
 		p.RLock()
@@ -352,7 +352,7 @@ func (p *planetsidetwoPlugin) runOutfitStatsCommand(bot *discordgobot.Gobot, cli
 		args["platform"] = "pc"
 	}
 
-	resp, err := voidwellAPIGet(fmt.Sprintf("https://voidwell.com/api/ps2/outfit/byalias/%s?platform=%s", args["outfitAlias"], args["platform"]))
+	resp, err := voidwellAPIGet(fmt.Sprintf("https://api.voidwell.com/ps2/outfit/byalias/%s?platform=%s", args["outfitAlias"], args["platform"]))
 
 	if err != nil {
 		p.RLock()
@@ -416,7 +416,7 @@ func (p *planetsidetwoPlugin) runOutfitStatsCommand(bot *discordgobot.Gobot, cli
 func (p *planetsidetwoPlugin) runWeaponStatsCommand(bot *discordgobot.Gobot, client *discordgobot.DiscordClient, payload discordgobot.CommandPayload) {
 	args, message := payload.Arguments, payload.Message
 
-	resp, err := voidwellAPIGet(fmt.Sprintf("https://voidwell.com/api/ps2/weaponinfo/byname/%s", args["weaponName"]))
+	resp, err := voidwellAPIGet(fmt.Sprintf("https://api.voidwell.com/ps2/weaponinfo/byname/%s", args["weaponName"]))
 
 	if err != nil {
 		p.RLock()
