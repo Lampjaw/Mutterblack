@@ -6,7 +6,7 @@ using Mutterblack.Bot.Services;
 namespace Mutterblack.Bot.Modules
 {
     [Group("ps2", "Planetside commands")]
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     public class PlanetsideModule : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly VoidwellClient _voidwellClient;

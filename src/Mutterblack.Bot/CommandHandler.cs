@@ -41,11 +41,7 @@ namespace Mutterblack.Bot
 
                 var result = await _commandService.ExecuteAsync(context, argPos, _serviceProvider);
 
-                if (result.Error == CommandError.UnknownCommand)
-                {
-                    await context.Channel.SendMessageAsync("Mutterblack has moved to slash commands!");
-                }
-                else if (!result.IsSuccess)
+                if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
                 {
                     await context.Channel.SendMessageAsync(result.ErrorReason);
                 }

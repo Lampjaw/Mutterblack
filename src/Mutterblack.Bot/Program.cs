@@ -41,7 +41,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         config.SocketConfig = new DiscordSocketConfig
         {
             LogLevel = DiscordLogLevel,
-            MessageCacheSize = 0
+            MessageCacheSize = 10
         };
 
         config.Token = context.Configuration.Get<BotConfiguration>().DiscordToken;
