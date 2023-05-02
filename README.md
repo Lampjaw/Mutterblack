@@ -6,22 +6,15 @@ Mutterblack is a discord bot primarily repsonsible for providing planetside 2 st
 If you would like to use Mutterblack, an admin of your server needs to go to this link:    
 https://discordapp.com/oauth2/authorize?client_id=439194558270537728&scope=bot
  
-### Commands
+### Slash Commands
 The following commands are available:
-* `?invite` - Get an invite link to add this bot to your server!
-* `?ps2c <character name>` - Get stats for a player.
-* `?ps2c <character name> <weapon name>` - Get weapon stats for a player.
-* `?ps2c-ps4eu <character name>` - Get stats for a player.
-* `?ps2c-ps4eu <character name> <weapon name>` - Get weapon stats for a player.
-* `?ps2c-ps4us <character name>` - Get stats for a player.
-* `?ps2c-ps4us <character name> <weapon name>` - Get weapon stats for a player.
-* `?ps2o <outfit tag>` - Get outfit stats
-* `?ps2o-ps4eu <outfit tag>` - Get outfit stats
-* `?ps2o-ps4us <outfit tag>` - Get outfit stats
-* `?ps2w <weapon name>` - Get weapon stats
-* `?setprefix <prefix>` - Set the command prefix for this server
-* `?stats` - Get bot stats
-* `?twanswate` - Twanswate the previous comment
+* `/invite` - Get an invite link to add this bot to your server!
+* `/ps2 player <character name>` - Get stats for a player.
+* `/ps2 player <character name> <weapon name>` - Get weapon stats for a player.
+* `/ps2 outfit <outfit tag>` - Get outfit stats
+* `/ps2 weapon <weapon name>` - Get weapon stats
+
+The Player and Outfit commands also support an optional Platform Type argument with possible values PC, PS4-US, and PS4-EU
 
 Notes:
 * In some cases if you're getting a bad match and you know the ID of the character or weapon you're trying to look up you may use that instead of a name.    
