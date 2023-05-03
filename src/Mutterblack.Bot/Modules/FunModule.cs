@@ -3,7 +3,7 @@ using Discord.Interactions;
 
 namespace Mutterblack.Bot.Modules
 {
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     public class FunModule : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("twanswate", "Twanswate the previous comment")]
@@ -12,7 +12,7 @@ namespace Mutterblack.Bot.Modules
             var messages = await Context.Channel.GetMessagesAsync(1, CacheMode.AllowDownload).FlattenAsync();
             var lastMessage = messages.FirstOrDefault();
 
-            if (lastMessage == null)
+            if (lastMessage == null || string.IsNullOrWhiteSpace(lastMessage.Content))
             {
                 await RespondAsync("Unable to find a message to translate.", ephemeral: true);
                 return;
@@ -31,7 +31,7 @@ namespace Mutterblack.Bot.Modules
                 content = content.Substring(selfPrefix.Length + 1);
             }
 
-            var translatedText = content
+            content = content
                 .Replace('r', 'w')
                 .Replace('R', 'W')
                 .Replace('l', 'w')
@@ -44,7 +44,7 @@ namespace Mutterblack.Bot.Modules
             var embed = new EmbedBuilder()
                 .WithAuthor(authorBuilder)
                 .WithColor(Constants.DefaultEmbedColor)
-                .WithDescription(translatedText)
+                .WithDescription(content)
                 .WithTimestamp(lastMessage.Timestamp)
                 .WithFooter(string.Format("in #{0} at {1}", Context.Channel.Name, Context.Guild.Name))
                 .Build();
